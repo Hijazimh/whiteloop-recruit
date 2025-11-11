@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  allowedDevOrigins: [
+    "https://*.replit.dev",
+    "https://*.repl.co",
+  ],
 };
 
 export default nextConfig;
