@@ -56,3 +56,4 @@ Whiteloop is a research-recruitment platform that connects researchers with veri
 - Implement authentication flows with Supabase.
 - Build researcher, participant, and admin dashboards.
 - Integrate third-party services (Stripe, LiveKit, Cal.com, Resend) as features come online.
+# whiteloop-recruit
