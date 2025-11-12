@@ -1,12 +1,10 @@
-import Link from "next/link";
-
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { InfoCard } from "@/components/dashboard/info-card";
 import { SectionHeading } from "@/components/dashboard/section-heading";
 import { requireRole } from "@/lib/auth/session";
 import { getProjectsForResearcher } from "@/lib/data/projects";
 
-import { CreateProjectForm } from "./create-project-form";
+import { ResearcherPageClient } from "./page-client";
 
 function formatCurrencyCents(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -25,7 +23,8 @@ export default async function ResearcherLanding() {
   const draftCount = projects.filter((project) => project.status === "draft").length;
 
   return (
-    <main className="min-h-screen bg-background px-6 py-16 sm:px-10">
+    <ResearcherPageClient>
+      <main className="min-h-screen bg-background px-6 py-16 sm:px-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-16">
         <header className="flex flex-col gap-4 rounded-3xl border border-border bg-card/60 p-8 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -41,12 +40,12 @@ export default async function ResearcherLanding() {
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:items-end">
-              <Link
+              <a
                 href="#create-project"
                 className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
                 New project
-              </Link>
+              </a>
               <SignOutButton />
             </div>
           </div>
@@ -78,16 +77,6 @@ export default async function ResearcherLanding() {
               value={formatCurrencyCents(totalBudget)}
               hint="Across all projects in your workspace."
             />
-          </div>
-        </section>
-
-        <section id="create-project" className="space-y-6">
-          <SectionHeading
-            title="Create a new project"
-            description="Define the parent project before adding individual studies and screeners."
-          />
-          <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
-            <CreateProjectForm />
           </div>
         </section>
 
@@ -149,5 +138,6 @@ export default async function ResearcherLanding() {
         </section>
       </div>
     </main>
+    </ResearcherPageClient>
   );
 }

@@ -1,0 +1,150 @@
+Project creation — what to ask (and why)
+1) Project basics
+
+Project title – clear internal handle for matching & emails.
+
+Short summary (1–2 lines) – used in listings; boosts applicant conversion.
+
+Research goal / key questions – informs screener + insight templates.
+
+Domain / category (e.g., fintech, e-comm) – improves matching & marketplace filters.
+
+Sensitivity level (low/med/high) – toggles extra consent & PII handling.
+
+2) Methodology
+
+Format (1:1 interview, usability test, focus group) – determines room type & capacity.
+
+Session length (minutes) – drives reward, scheduling buffers, and credit usage.
+
+Number of participants (total & per session) – controls quotas & budget checks.
+
+Moderator provided by (researcher/Whiteloop) – affects staffing & pricing.
+
+3) Target audience & eligibility
+
+Geography (countries/regions, remote vs on-site) – legal + payout feasibility.
+
+Languages (required, nice-to-have) – matching & transcription model.
+
+Demographics (age ranges, gender, education, income) – hard eligibility.
+
+Experience/behaviors (e.g., “bought online 2× in last month”) – actual signal.
+
+Exclusions (competitors, recent study participation) – bias reduction.
+
+4) Screener setup
+
+Screener questions (single/multi/scale/text) – prequalifies at scale.
+
+Must-pass rules (e.g., country ∈ {UAE, KSA}) – instant reject saves time.
+
+Scored rules + threshold – rank candidates when supply is high.
+
+Auto-approve (on/off) – speed vs control trade-off.
+
+5) Quotas & balancing
+
+Quota cells (e.g., 50% KSA, 50% UAE; min 30% female) – prevents skew.
+
+Max per demographic cell – stops overfilling early cohorts.
+
+Reserve/waitlist size – protects against no-shows.
+
+6) Incentives & budget
+
+Participant reward per session (currency) – applicant conversion + fairness.
+
+Researcher budget/escrow – payout guarantees & fraud prevention.
+
+No-show rules (partial/none) – sets expectations and ledger logic.
+
+7) Scheduling
+
+Recruiting window (start/end dates) – supply planning & email cadence.
+
+Session window (date range, time-of-day, timezone) – calendar constraints.
+
+Scheduling method (Cal.com link vs manual slots) – UX + automation.
+
+Buffer time (pre/post) – prevents overlap & cognitive load.
+
+8) Consent, privacy & compliance
+
+Recording & transcription consent – legal must-have.
+
+Data retention period – storage costs + GDPR/PDPL.
+
+PII handling (minimize/standard/extended) – toggles masked views & exports.
+
+Recontact permission – future longitudinal studies & CLV.
+
+9) Materials & tasks
+
+Stimuli links/files (prototypes, URLs, docs) – ensure readiness.
+
+Moderator guide / task list – quality & consistent insights.
+
+Environment requirements (desktop/mobile, headphones) – data quality.
+
+10) Quality & anti-fraud
+
+Identity/KYC level (none/light/strict) – risk vs friction.
+
+Tech checks (camera/mic/speed) – reduce failed sessions.
+
+Duplicate participation policy – protects dataset integrity.
+
+11) Transcription & insights
+
+Transcription model (fast/accurate) – cost vs quality.
+
+Insight output (themes, quotes, sentiment, JTBD, “5 Whys”) – report structure.
+
+Highlight reels (on/off) – shareable clips for stakeholders.
+
+12) Deliverables & success criteria
+
+What “done” looks like (e.g., 12 completed 45-min interviews) – exit condition.
+
+KPIs (completion rate, qualified rate) – operational health.
+
+Report format (PDF, GDoc, CSV of insights) – handoff clarity.
+
+13) Team & permissions
+
+Research team members – workspace access & notifications.
+
+Stakeholder viewers (read-only) – sharing without editing.
+
+14) Communication preferences
+
+Notification cadence (daily digest, realtime) – signal vs noise.
+
+Contact channel (email/Slack webhook) – keeps teams in flow.
+
+Participant comms tone (formal/friendly) – brand consistency.
+
+15) Localization & accessibility
+
+UI language(s) – recruit locally; Arabic/RTL for MENA.
+
+Accessibility needs (captions, larger text) – inclusive research.
+
+16) Risk & escalation
+
+Potential risks (sensitive topics, distress) – moderator guardrails.
+
+Escalation contact – fast issue resolution.
+
+17) Legal docs
+
+NDA (upload or template) – protects unreleased concepts.
+
+Terms acceptance – enforceable ground rules.
+
+18) Marketplace visibility
+
+Visibility (private/invite-only/public listing) – control demand.
+
+Study page excerpt – copy for participant marketplace.
