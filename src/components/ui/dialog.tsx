@@ -46,10 +46,10 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   return (
     <dialog
       ref={dialogRef}
-      className="backdrop:bg-black/60"
-      style={{ padding: 0, border: "none", backgroundColor: "transparent" }}
+      className="m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0 backdrop:bg-black/60"
+      style={{ border: "none" }}
     >
-      <div className="mx-auto my-auto bg-background rounded-3xl p-0 shadow-2xl max-w-4xl w-[90vw] max-h-[90vh] overflow-hidden border border-border flex flex-col">
+      <div className="flex max-h-[90vh] w-[90vw] max-w-4xl flex-col overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
         {children}
       </div>
     </dialog>
