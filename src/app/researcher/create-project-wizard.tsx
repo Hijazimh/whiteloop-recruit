@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useFormStatus } from "react-dom";
+import { useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +53,7 @@ type FormData = {
   
   visibility: string;
   marketplaceExcerpt: string;
+  status: "draft" | "published";
 };
 
 const initialFormData: FormData = {
@@ -92,6 +92,7 @@ const initialFormData: FormData = {
   
   visibility: "private",
   marketplaceExcerpt: "",
+  status: "draft",
 };
 
 const STEPS = [
@@ -130,24 +131,12 @@ function Field({
   );
 }
 
-function SubmitButton({ children }: { children: React.ReactNode }) {
-  const { pending } = useFormStatus();
-  
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
-    >
-      {pending ? "Creating..." : children}
-    </button>
-  );
-}
-
 export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
 
   const updateFormData = (updates: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -167,24 +156,64 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
+  const submitProject = async (statusOverride?: "draft" | "published") => {
+    const status = statusOverride ?? formData.status ?? "draft";
+    setIsSubmitting(true);
+    setError(null);
+
     const formDataObj = new FormData();
     formDataObj.append("title", formData.title);
     formDataObj.append("description", formData.summary + "\n\nResearch Goals:\n" + formData.researchGoals);
     formDataObj.append("domain", formData.domain);
     formDataObj.append("budget", formData.budget);
-    formDataObj.append("status", "draft");
-    
+    formDataObj.append("status", status);
+
     const result = await createProjectAction(undefined, formDataObj);
-    
+    setIsSubmitting(false);
+
     if (result.error) {
       setError(result.error);
+      return false;
+    }
+
+    resetWizard();
+    onOpenChange(false);
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await submitProject(formData.status ?? "draft");
+  };
+
+  const resetWizard = () => {
+    setFormData(initialFormData);
+    setCurrentStep(0);
+    setError(null);
+    setConfirmCloseOpen(false);
+  };
+
+  const isDirty = useMemo(() => {
+    return (
+      JSON.stringify(formData) !== JSON.stringify(initialFormData) ||
+      currentStep !== 0
+    );
+  }, [formData, currentStep]);
+
+  const attemptClose = () => {
+    if (isDirty) {
+      setConfirmCloseOpen(true);
     } else {
-      setFormData(initialFormData);
-      setCurrentStep(0);
+      resetWizard();
       onOpenChange(false);
+    }
+  };
+
+  const handleDialogOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      attemptClose();
+    } else {
+      onOpenChange(true);
     }
   };
 
@@ -319,7 +348,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
                 onChange={(e) => updateFormData({ moderatorType: e.target.value })}
                 className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm"
               >
-                <option value="researcher">I'll moderate (included)</option>
+                <option value="researcher">I&apos;ll moderate (included)</option>
                 <option value="whiteloop">Whiteloop moderator (add-on)</option>
               </select>
             </Field>
@@ -633,7 +662,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
 
             <div className="rounded-xl bg-muted/50 p-4 text-sm">
               <p className="text-muted-foreground">
-                Your project will be saved as a <strong>draft</strong>. You can edit it and publish when ready to start recruiting participants.
+                Your project will be saved as a <strong>{formData.status === "published" ? "published study" : "draft"}</strong>. You can edit it and publish when ready to start recruiting participants.
               </p>
             </div>
           </div>
@@ -645,11 +674,24 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{STEPS[currentStep].title}</DialogTitle>
-          <DialogDescription>{STEPS[currentStep].description}</DialogDescription>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <DialogTitle>{STEPS[currentStep].title}</DialogTitle>
+              <DialogDescription>{STEPS[currentStep].description}</DialogDescription>
+            </div>
+            <button
+              type="button"
+              onClick={attemptClose}
+              className="rounded-full p-2 text-muted-foreground hover:bg-muted hover:text-foreground transition"
+              aria-label="Close project wizard"
+            >
+              ×
+            </button>
+          </div>
           <div className="flex items-center gap-2 mt-4">
             {STEPS.map((step, index) => (
               <div
@@ -672,7 +714,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
         </DialogBody>
 
         <DialogFooter>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             {currentStep > 0 && (
               <button
                 type="button"
@@ -684,11 +726,24 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
             )}
             <button
               type="button"
-              onClick={() => onOpenChange(false)}
+              onClick={attemptClose}
               className="inline-flex items-center justify-center rounded-full border border-border bg-background px-6 py-2.5 text-sm font-semibold transition hover:bg-muted"
             >
               Cancel
             </button>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>Project state:</span>
+              <select
+                value={formData.status}
+                onChange={(e) =>
+                  updateFormData({ status: e.target.value as "draft" | "published" })
+                }
+                className="rounded-full border border-border bg-background px-3 py-1.5 text-sm"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Live</option>
+              </select>
+            </div>
           </div>
 
           <div>
@@ -701,11 +756,77 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
                 Continue
               </button>
             ) : (
-              <SubmitButton>Create Project</SubmitButton>
+              <button
+                type="submit"
+                form="project-form"
+                className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={isSubmitting}
+              >
+                {isSubmitting
+                  ? "Saving..."
+                  : formData.status === "published"
+                  ? "Publish Project"
+                  : "Save Draft"}
+              </button>
             )}
           </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <Dialog open={confirmCloseOpen} onOpenChange={setConfirmCloseOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Discard changes?</DialogTitle>
+          <DialogDescription>
+            You have unsaved changes. Do you want to save this project as a draft before closing?
+          </DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <p className="text-sm text-muted-foreground">
+            Choosing &quot;Save as draft&quot; will keep your progress so you can resume later. Discard
+            will remove any changes you&apos;ve made in this session.
+          </p>
+        </DialogBody>
+        <DialogFooter>
+          <button
+            type="button"
+            onClick={() => {
+              setConfirmCloseOpen(false);
+            }}
+            className="inline-flex items-center justify-center rounded-full border border-border bg-background px-5 py-2 text-sm font-semibold transition hover:bg-muted"
+            disabled={isSubmitting}
+          >
+            Continue editing
+          </button>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                resetWizard();
+                onOpenChange(false);
+              }}
+              className="inline-flex items-center justify-center rounded-full border border-border bg-background px-5 py-2 text-sm font-semibold transition hover:bg-muted"
+              disabled={isSubmitting}
+            >
+              Discard changes
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                const success = await submitProject("draft");
+                if (success) {
+                  setConfirmCloseOpen(false);
+                }
+              }}
+              className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Save as draft"}
+            </button>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

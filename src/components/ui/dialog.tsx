@@ -32,7 +32,6 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 
     const handleCancel = (e: Event) => {
       e.preventDefault();
-      onOpenChange(false);
     };
 
     dialog.addEventListener("close", handleClose);
@@ -47,9 +46,12 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   return (
     <dialog
       ref={dialogRef}
-      className="backdrop:bg-black/60 bg-background rounded-3xl p-0 shadow-2xl max-w-4xl w-[90vw] max-h-[90vh] overflow-hidden border border-border"
+      className="backdrop:bg-black/60"
+      style={{ padding: 0, border: "none", backgroundColor: "transparent" }}
     >
-      {children}
+      <div className="mx-auto my-auto bg-background rounded-3xl p-0 shadow-2xl max-w-4xl w-[90vw] max-h-[90vh] overflow-hidden border border-border flex flex-col">
+        {children}
+      </div>
     </dialog>
   );
 }
