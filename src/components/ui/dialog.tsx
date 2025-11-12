@@ -23,6 +23,21 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
   }, [open]);
 
   useEffect(() => {
+    if (!open) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
 
@@ -43,10 +58,14 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     };
   }, [onOpenChange]);
 
+  if (!open) {
+    return null;
+  }
+
   return (
     <dialog
       ref={dialogRef}
-      className="m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0 backdrop:bg-black/60"
+      className={`fixed inset-0 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0 backdrop:bg-black/60 ${open ? "" : "hidden"}`}
       style={{ border: "none" }}
     >
       <div className="flex max-h-[90vh] w-[90vw] max-w-4xl flex-col overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
