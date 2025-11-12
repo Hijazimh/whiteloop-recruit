@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface DialogProps {
   open: boolean;
@@ -9,18 +10,42 @@ interface DialogProps {
 }
 
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
+    setMounted(true);
+  }, []);
 
-    if (open) {
-      dialog.showModal();
-    } else {
-      dialog.close();
-    }
+  useEffect(() => {
+    if (!open) return;
+
+    previouslyFocusedElementRef.current = document.activeElement as HTMLElement | null;
+
+    const node = containerRef.current;
+    node?.focus({ preventScroll: true });
+
+    return () => {
+      previouslyFocusedElementRef.current?.focus({ preventScroll: true });
+    };
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onOpenChange(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onOpenChange]);
 
   useEffect(() => {
     if (!open) return;
@@ -37,41 +62,28 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     };
   }, [open]);
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    const handleClose = () => {
-      onOpenChange(false);
-    };
-
-    const handleCancel = (e: Event) => {
-      e.preventDefault();
-    };
-
-    dialog.addEventListener("close", handleClose);
-    dialog.addEventListener("cancel", handleCancel);
-
-    return () => {
-      dialog.removeEventListener("close", handleClose);
-      dialog.removeEventListener("cancel", handleCancel);
-    };
-  }, [onOpenChange]);
-
-  if (!open) {
+  if (!mounted || !open) {
     return null;
   }
 
-  return (
-    <dialog
-      ref={dialogRef}
-      className={`fixed inset-0 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0 backdrop:bg-black/60 ${open ? "" : "hidden"}`}
-      style={{ border: "none" }}
-    >
-      <div className="flex max-h-[90vh] w-[90vw] max-w-4xl flex-col overflow-hidden rounded-3xl border border-border bg-background shadow-2xl">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/60"
+        aria-hidden="true"
+        onClick={() => onOpenChange(false)}
+      />
+      <div
+        ref={containerRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+        className="relative z-10 flex w-full max-w-4xl h-[90vh] flex-col overflow-hidden rounded-3xl border border-border bg-background shadow-2xl"
+      >
         {children}
       </div>
-    </dialog>
+    </div>,
+    document.body
   );
 }
 
@@ -80,7 +92,7 @@ interface DialogContentProps {
 }
 
 export function DialogContent({ children }: DialogContentProps) {
-  return <div className="flex flex-col h-full">{children}</div>;
+  return <div className="flex h-full min-h-0 flex-1 flex-col">{children}</div>;
 }
 
 interface DialogHeaderProps {
@@ -116,7 +128,7 @@ interface DialogBodyProps {
 }
 
 export function DialogBody({ children }: DialogBodyProps) {
-  return <div className="flex-1 overflow-y-auto px-8 py-6">{children}</div>;
+  return <div className="flex-1 min-h-0 overflow-y-auto overscroll-behavior-contain px-8 py-6">{children}</div>;
 }
 
 interface DialogFooterProps {
@@ -125,7 +137,7 @@ interface DialogFooterProps {
 
 export function DialogFooter({ children }: DialogFooterProps) {
   return (
-    <div className="border-t border-border px-8 py-6 flex items-center justify-between flex-shrink-0">
+    <div className="sticky bottom-0 border-t border-border px-8 py-6 flex items-center justify-between flex-shrink-0 bg-background">
       {children}
     </div>
   );
