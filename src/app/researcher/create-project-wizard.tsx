@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -137,6 +137,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const programmaticCloseRef = useRef(false);
 
   const updateFormData = (updates: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -154,6 +155,12 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
       setCurrentStep((prev) => prev - 1);
       setError(null);
     }
+  };
+
+  const closeWizard = () => {
+    programmaticCloseRef.current = true;
+    resetWizard();
+    onOpenChange(false);
   };
 
   const submitProject = async (statusOverride?: "draft" | "published") => {
@@ -176,8 +183,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
       return false;
     }
 
-    resetWizard();
-    onOpenChange(false);
+    closeWizard();
     return true;
   };
 
@@ -191,6 +197,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
     setCurrentStep(0);
     setError(null);
     setConfirmCloseOpen(false);
+    setIsSubmitting(false);
   };
 
   const isDirty = useMemo(() => {
@@ -204,15 +211,20 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
     if (isDirty) {
       setConfirmCloseOpen(true);
     } else {
-      resetWizard();
-      onOpenChange(false);
+      closeWizard();
     }
   };
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
+      if (programmaticCloseRef.current) {
+        programmaticCloseRef.current = false;
+        onOpenChange(false);
+        return;
+      }
       attemptClose();
     } else {
+      programmaticCloseRef.current = false;
       onOpenChange(true);
     }
   };
@@ -802,8 +814,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
             <button
               type="button"
               onClick={() => {
-                resetWizard();
-                onOpenChange(false);
+                closeWizard();
               }}
               className="inline-flex items-center justify-center rounded-full border border-border bg-background px-5 py-2 text-sm font-semibold transition hover:bg-muted"
               disabled={isSubmitting}
@@ -814,9 +825,7 @@ export function CreateProjectWizard({ open, onOpenChange }: CreateProjectWizardP
               type="button"
               onClick={async () => {
                 const success = await submitProject("draft");
-                if (success) {
-                  setConfirmCloseOpen(false);
-                }
+                if (success) return;
               }}
               className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
               disabled={isSubmitting}
